@@ -48,6 +48,7 @@ class NotesController extends Controller
         $note->title = $request->title;
         $note->description = $request->description;
         $note->user_id = Auth::user()->id; // Assuming user is authenticated
+        $note->scheduled_at = $request->input('scheduled_at');
         $note->save();
 
         $note->shared()->attach($request->share);
@@ -112,18 +113,18 @@ class NotesController extends Controller
         // ->join('users', 'users.id', 'notes.user_id')
         // ->where('user_id', Auth::id());
         
-        $sqlBuilder = 'SELECT a.id, a.title, a.name, a.created_at FROM ((SELECT notes.id, notes.title, users.name, notes.created_at
-        FROM notes notes
-        JOIN users users ON users.id = notes.user_id
-        WHERE notes.user_id = '.Auth::id().')
-        UNION 
-        (
-            SELECT notes.id, notes.title, (SELECT name from users where users.id = notes.user_id), notes.created_at
-            FROM note_user note_user
-            JOIN notes notes ON notes.id = note_user.note_id
-            JOIN users users ON users.id = note_user.user_id
-            WHERE note_user.user_id = '.Auth::id().'
-        )) a';
+        $sqlBuilder = 'SELECT a.id, a.title, a.name, a.created_at, a.scheduled_at FROM ((SELECT notes.id, notes.title, users.name, notes.created_at, notes.scheduled_at
+    FROM notes notes
+    JOIN users users ON users.id = notes.user_id
+    WHERE notes.user_id = '.Auth::id().')
+    UNION 
+    (
+        SELECT notes.id, notes.title, (SELECT name from users where users.id = notes.user_id), notes.created_at, notes.scheduled_at
+        FROM note_user note_user
+        JOIN notes notes ON notes.id = note_user.note_id
+        JOIN users users ON users.id = note_user.user_id
+        WHERE note_user.user_id = '.Auth::id().'
+    )) a';
 
         
         $dt = new Datatables(new LaravelAdapter);
@@ -149,5 +150,21 @@ class NotesController extends Controller
         $dt->hide('id');
 
         return $dt->generate();
+    }
+
+    public function calendar()
+    {
+        $events = Note::where('user_id', Auth::id())
+            ->whereNotNull('scheduled_at')
+            ->get()
+            ->map(function ($note) {
+                return [
+                    'title' => $note->title,
+                    'start' => $note->scheduled_at,
+                    'url' => route('notes.show', $note->id),
+                ];
+            });
+
+        return view('notes.calendar', compact('events'));
     }
 }

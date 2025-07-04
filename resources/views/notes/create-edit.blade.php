@@ -33,6 +33,16 @@
 
                                 </div>
                             </div>
+
+                            <div class="row mb-3">
+                                {{-- <label for="title" class="col-md-4 col-form-label text-md-end">{{ __('Title: ') }}</label> --}}
+                                <label for="scheduled_at" class="col-md-4 col-form-label text-md-end">Schedule Time:</label>
+                                <div class="col-md-6">
+                                    {{-- <input id="title" type="text" class="form-control" name="title" value="{{ $isEdit ? $note->title  : old('title')}}" required placeholder="Enter your note title!"> --}}
+                                    <input type="datetime-local" name="scheduled_at" id="scheduled_at" class="form-control" value="{{ old('scheduled_at', isset($note) ? $note->scheduled_at : '') }}">
+                                </div>
+                            </div>
+
                             <div class="row mb-3">
                                 <label for="description"
                                     class="col-md-4 col-form-label text-md-end">{{ __('Description: ') }}</label>

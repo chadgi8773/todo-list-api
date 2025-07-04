@@ -1,7 +1,9 @@
 @extends('layouts.app')
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
 
 @section('content')
-    <div class="container">
+    <div class="container" id="calendar">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <a href="{{ route('notes.create') }}">Create new</a>
@@ -11,7 +13,6 @@
                             <th>Title</th>
                             <th>Created By </th>
                             <th>Created At </th>
-                            <th>Scheduled For</th>
                             <th>Actions </th>
                         </tr>
                     </thead>
@@ -39,12 +40,13 @@
         </div>
     </div>
     <script>
-        $(document).ready(function () {
-        $('#notes_table').dataTable({
-            "serverSide": true,
-            "responsive": true,
-            "ajax": "{{ route('notes.data') }}"
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: @json($events) // Pass notes with scheduled_at as events
     });
-    </script>
+    calendar.render();
+});
+</script>
 @endsection
